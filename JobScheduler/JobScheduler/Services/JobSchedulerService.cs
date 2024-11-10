@@ -9,7 +9,6 @@ namespace JobScheduler.Services
     public class JobSchedulerService : BackgroundService
     {
         private static ScriptOptions scriptOptions = ScriptOptions.Default
-            .WithReferences(typeof(JobSchedulerService).Assembly)
             .AddImports("System"); // Add the System namespace to allow 'Console.WriteLine' scripts
 
         private readonly IJobRepository _jobRepository;
@@ -51,7 +50,7 @@ namespace JobScheduler.Services
 
                 // Update the job in the repository to reflect the execution
                 await _jobRepository.UpdateJobAsync(job);
-                _logger.LogInformation($"Executed job '{job.Name}' successfully.");
+                _logger.LogInformation($"Executed job '{job.Name}' successfully. ({job.OccurrencesExecuted} out of {job.MaxOccurrences} iterations)");
             }
             catch (Exception ex)
             {
