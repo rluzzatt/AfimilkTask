@@ -1,4 +1,6 @@
 
+using JobScheduler.Repository;
+
 namespace JobScheduler
 {
     public class Program
@@ -10,6 +12,9 @@ namespace JobScheduler
             // Add services to the container.
 
             builder.Services.AddControllers();
+
+            builder.Services.AddSingleton<IJobRepository, JobRepository>();
+
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
