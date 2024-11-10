@@ -28,6 +28,8 @@ namespace JobSchedulerTests.Unit
             await _jobRepository.DeleteAllJobsAsync();
             var jobs = GenerateJobs(2, "SaveTest");
 
+            Assert.IsTrue(jobs.Any(),"Jobs where not generated, test is aborted");
+
             // Act: Save jobs
             await _jobRepository.SaveJobsAsync(jobs);
 
@@ -92,7 +94,7 @@ namespace JobSchedulerTests.Unit
             {
                 jobs.Add(new Job
                 {
-                    ExecutionTime = DateTime.Now.AddMinutes(i),
+                    ExecutionTime = DateTime.Now,
                     MaxOccurrences = 1,
                     Name = $"{namePrefix} {i + 1}",
                     ScriptCode = $"Console.WriteLine(\"test job {namePrefix}{i + 1}\")"

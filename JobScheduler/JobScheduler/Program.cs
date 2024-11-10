@@ -1,5 +1,6 @@
 
 using JobScheduler.Repository;
+using JobScheduler.Services;
 
 namespace JobScheduler
 {
@@ -14,6 +15,10 @@ namespace JobScheduler
             builder.Services.AddControllers();
 
             builder.Services.AddSingleton<IJobRepository, JobRepository>();
+
+            builder.Services.AddSingleton<JobSchedulerService>(); // Register the background service
+            builder.Services.AddHostedService(provider => provider.GetRequiredService<JobSchedulerService>());
+
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
