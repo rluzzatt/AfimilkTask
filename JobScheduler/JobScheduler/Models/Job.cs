@@ -2,7 +2,7 @@
 {
     public class Job
     {
-        public string Id { get; } = Guid.NewGuid().ToString();
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         public string Name { get; set; }
         public DateTime ExecutionTime { get; set; }
         public int? MaxOccurrences { get; set; }

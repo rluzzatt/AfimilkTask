@@ -7,5 +7,6 @@ namespace JobScheduler.Repository
         Task<List<Job>> LoadJobsAsync();
         Task SaveJobsAsync(List<Job> jobs);
         Task UpdateJobAsync(Job job);
+        Task DeleteAllJobsAsync();
     }
 }
