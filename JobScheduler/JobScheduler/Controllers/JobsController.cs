@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using JobScheduler.Dto;
 using JobScheduler.Models;
+using JobScheduler.Repository;
 using JobScheduler.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,11 +14,13 @@ namespace JobScheduler.Controllers
         private readonly JobSchedulerService _jobSchedulerService;
         private readonly ILogger<JobsController> _logger;
         private readonly IMapper _mapper;
+        private readonly IJobRepository _jobRepository;//for demo api usage only
 
-        public JobsController(IMapper mapper, JobSchedulerService jobSchedulerService, ILogger<JobsController> logger)
+        public JobsController(IMapper mapper, JobSchedulerService jobSchedulerService, IJobRepository jobRepository, ILogger<JobsController> logger)
         {
             _mapper = mapper;
             _jobSchedulerService = jobSchedulerService;
+            _jobRepository = jobRepository;
             _logger = logger;
         }
 
@@ -61,10 +64,51 @@ namespace JobScheduler.Controllers
         }
 
         [HttpGet("run-demo")]
-        public ActionResult<string> Demo()
+        public async Task<ActionResult<string>> Demo()
         {
-            return Ok("Job scheduler demo started, open the server console to see jobs executions");
+            Console.WriteLine();
+            Console.WriteLine("----------->   Demo Starting <------------");
+            Console.WriteLine("Jobs will be scheduled as follows:");
+            Console.WriteLine("1. Job 1 will run 3 seconds from now and print a message. It will run 2 times.");
+            Console.WriteLine("2. Job 2 will run 8 seconds from now and print a message. It will run 1 time.");
+            Console.WriteLine("3. Job 3 will run 11 seconds from now and print a message, then run 5 times.");
+            Console.WriteLine("Each job will execute at the scheduled time based on the MaxOccurrences.");
+            Console.WriteLine();
 
+            await _jobRepository.DeleteAllJobsAsync();
+
+            var now = DateTime.Now.TimeOfDay;
+
+            var job1 = new Job
+            {
+                Name = "Demo Job 1",
+                ExecutionTime = now.Add(TimeSpan.FromSeconds(3)),
+                ScriptCode = "Console.WriteLine(\"[Demo Job 1] Running job scheduled 3 seconds from start time.\");",
+                MaxOccurrences = 2
+            };
+
+            var job2 = new Job
+            {
+                Name = "Demo Job 2",
+                ExecutionTime = now.Add(TimeSpan.FromSeconds(8)),
+                ScriptCode = "Console.WriteLine(\"[Demo Job 2] Running job scheduled 8 seconds from start time.\");",
+                MaxOccurrences = 1
+            };
+
+            var job3 = new Job
+            {
+                Name = "Demo Job 3",
+                ExecutionTime = now.Add(TimeSpan.FromSeconds(11)),
+                ScriptCode = "Console.WriteLine(\"[Demo Job 3] Running job scheduled 11 seconds from start time.\");",
+                MaxOccurrences = 5 // Will run twice, demonstrating multiple occurrences
+            };
+
+            // Register the jobs in the scheduler
+            await _jobSchedulerService.RegisterJob(job1);
+            await _jobSchedulerService.RegisterJob(job2);
+            await _jobSchedulerService.RegisterJob(job3);
+
+            return Ok("Job scheduler demo started. Check the server console for job outputs.");
         }
 
     }

@@ -63,8 +63,10 @@ namespace JobScheduler.Services
                 // Update the job in the repository to reflect the execution
                 await _jobRepository.UpdateJobAsync(job);
 
+                var occurrences = job.MaxOccurrences.HasValue ? job.MaxOccurrences.ToString() :"infinite";
+
                 _logger.LogInformation($"Executed job '{job.Name}' successfully. " +
-                    $"({job.OccurrencesExecuted} out of {job.MaxOccurrences} iterations)");
+                    $"({job.OccurrencesExecuted} out of {occurrences} iterations)");
             }
             catch (Exception ex)
             {
