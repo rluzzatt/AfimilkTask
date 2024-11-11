@@ -94,7 +94,7 @@ namespace JobSchedulerTests.Unit
             {
                 jobs.Add(new Job
                 {
-                    ExecutionTime = DateTime.Now,
+                    ExecutionTime = DateTime.Now.TimeOfDay,
                     MaxOccurrences = 1,
                     Name = $"{namePrefix} {i + 1}",
                     ScriptCode = $"Console.WriteLine(\"test job {namePrefix}{i + 1}\")"

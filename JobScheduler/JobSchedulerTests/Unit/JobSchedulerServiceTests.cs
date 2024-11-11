@@ -2,6 +2,7 @@
 using JobScheduler.Repository;
 using JobScheduler.Services;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace JobSchedulerTests.Unit
 {
@@ -34,7 +35,7 @@ namespace JobSchedulerTests.Unit
             {
                 Name = "ExecutionTestJob",
                 ScriptCode = "System.Console.WriteLine(\"Running Job...\");",
-                ExecutionTime = DateTime.Now.AddSeconds(-1), // Execute immediately
+                ExecutionTime = DateTime.Now.TimeOfDay - TimeSpan.FromSeconds(1), // Execute immediately
                 MaxOccurrences = 1,
                 OccurrencesExecuted = 0,
             };

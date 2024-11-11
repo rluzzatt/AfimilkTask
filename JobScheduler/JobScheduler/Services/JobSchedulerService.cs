@@ -26,16 +26,18 @@ namespace JobScheduler.Services
         {
             _jobs = await _jobRepository.LoadJobsAsync();
 
-            // Run a loop to check and execute jobs periodically
             while (!stoppingToken.IsCancellationRequested)
             {
-                foreach (var job in _jobs.Where(j => !j.IsCompleted && j.ExecutionTime <= DateTime.Now))
+                // Get the current time as TimeSpan
+                TimeSpan currentTime = DateTime.Now.TimeOfDay;
+
+                foreach (var job in _jobs.Where(j => !j.IsCompleted && j.ExecutionTime <= currentTime))
                 {
-                    await ExecuteJobAsync(job, stoppingToken);
+                    _ = ExecuteJobAsync(job, stoppingToken);
                 }
 
-                // Wait for 5 seconds minute before checking again
-                await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+                // Wait for 5 seconds before checking again
+                await Task.Delay(TimeSpan.FromSeconds(2), stoppingToken);
             }
         }
 
