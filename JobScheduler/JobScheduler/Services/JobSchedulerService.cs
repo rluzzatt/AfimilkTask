@@ -30,7 +30,8 @@ namespace JobScheduler.Services
             {
                 TimeSpan currentTime = DateTime.Now.TimeOfDay;
 
-                foreach (var job in _jobs.Where(j => !j.IsCompleted && j.ExecutionTime <= currentTime).ToList())
+                foreach (var job in _jobs.Where(j => !j.IsCompleted && j.ExecutionTime <= currentTime)
+                    .ToList(/*avoid enumeration issues*/))
                 {
                     //no reason to await for job to compleate execution
                     _ = ExecuteJobAsync(job, stoppingToken);

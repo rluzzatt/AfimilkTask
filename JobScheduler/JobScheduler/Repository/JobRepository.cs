@@ -2,11 +2,15 @@
 {
     using JobScheduler.Models;
     using System.Text.Json;
+    using System.Threading;
 
     public class JobRepository : IJobRepository
     {
         private readonly string _filePath = "c:\\temp\\jobs.json";
         private readonly ILogger<JobRepository> _logger;
+
+        private readonly SemaphoreSlim _readSemaphore = new SemaphoreSlim(1, 1); // Semaphore for read operations
+        private readonly SemaphoreSlim _writeSemaphore = new SemaphoreSlim(1, 1); // Semaphore for write operations
 
         public JobRepository(ILogger<JobRepository> logger)
         {
@@ -15,74 +19,105 @@
 
         public async Task DeleteAllJobsAsync()
         {
-            if (File.Exists(_filePath))
+            await _writeSemaphore.WaitAsync(); // Lock for writing
+            try
             {
-                await Task.Run(() => File.Delete(_filePath)); 
+                if (File.Exists(_filePath))
+                {
+                    File.Delete(_filePath);
+                }
+            }
+            finally
+            {
+                _writeSemaphore.Release(); // Release the write semaphore
             }
         }
 
         public async Task<List<Job>> LoadJobsAsync()
         {
-            if (!File.Exists(_filePath))
-            {
-                _logger.LogInformation("No jobs file found at {FilePath}, returning empty list.", _filePath);
-                return new List<Job>(); // Return empty list if the file does not exist
-            }
-
+            await _readSemaphore.WaitAsync(); // Lock for reading
             try
             {
-                var json = await File.ReadAllTextAsync(_filePath);
-                if(string.IsNullOrEmpty(json)) return new List<Job>();  
+                if (!File.Exists(_filePath))
+                {
+                    _logger.LogInformation("No jobs file found at {FilePath}, returning empty list.", _filePath);
+                    return new List<Job>(); // Return empty list if the file does not exist
+                }
 
-                var jobs = JsonSerializer.Deserialize<List<Job>>(json) ?? new List<Job>();
+                try
+                {
+                    var json = await File.ReadAllTextAsync(_filePath);
+                    if (string.IsNullOrEmpty(json)) return new List<Job>();
 
-                return jobs;
+                    var jobs = JsonSerializer.Deserialize<List<Job>>(json) ?? new List<Job>();
+
+                    return jobs;
+                }
+                catch (JsonException ex)
+                {
+                    _logger.LogError(ex, "Error deserializing jobs from {FilePath}. Returning empty list.", _filePath);
+                    return new List<Job>(); // Return empty list if deserialization fails
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "An unexpected error occurred while loading jobs from {FilePath}. Returning empty list.", _filePath);
+                    return new List<Job>(); // Return empty list for unexpected errors
+                }
             }
-            catch (JsonException ex)
+            finally
             {
-                _logger.LogError(ex, "Error deserializing jobs from {FilePath}. Returning empty list.", _filePath);
-                return new List<Job>(); // Return empty list if deserialization fails
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "An unexpected error occurred while loading jobs from {FilePath}. Returning empty list.", _filePath);
-                return new List<Job>(); // Return empty list for unexpected errors
+                _readSemaphore.Release(); // Release the read semaphore
             }
         }
 
-
         public async Task SaveJobsAsync(List<Job> jobs)
         {
-            // Ensure the directory exists
-            Directory.CreateDirectory(path: Path.GetDirectoryName(_filePath));
+            await _writeSemaphore.WaitAsync(); // Lock for writing
+            try
+            {
+                // Ensure the directory exists
+                Directory.CreateDirectory(Path.GetDirectoryName(_filePath));
 
-            // Serialize the combined list back to JSON and write it to the file
-            var json = JsonSerializer.Serialize(jobs, new JsonSerializerOptions { WriteIndented = true });
-            await File.WriteAllTextAsync(_filePath, json);
+                // Serialize the combined list back to JSON and write it to the file
+                var json = JsonSerializer.Serialize(jobs, new JsonSerializerOptions { WriteIndented = true });
+                await File.WriteAllTextAsync(_filePath, json);
+            }
+            finally
+            {
+                _writeSemaphore.Release(); // Release the write semaphore
+            }
         }
 
         public async Task UpdateJobAsync(Job job)
         {
-            var jobs = await LoadJobsAsync();
-
-            // Find the index of the job to update
-            var index = jobs.FindIndex(j => j.Id == job.Id);
-
-            // If the job exists, replace the old job with the updated one
-            if (index >= 0)
+            await _writeSemaphore.WaitAsync(); // Lock for writing
+            try
             {
-                jobs[index] = job;
+                // Load jobs for updating, outside of the write lock
+                var jobs = await LoadJobsAsync();
 
-                // Serialize the updated list and write it back to the file
-                var json = JsonSerializer.Serialize(jobs, new JsonSerializerOptions { WriteIndented = true });
-                await File.WriteAllTextAsync(_filePath, json);
+                // Find the index of the job to update
+                var index = jobs.FindIndex(j => j.Id == job.Id);
+
+                // If the job exists, replace the old job with the updated one
+                if (index >= 0)
+                {
+                    jobs[index] = job;
+
+                    // Serialize the updated list and write it back to the file
+                    var json = JsonSerializer.Serialize(jobs, new JsonSerializerOptions { WriteIndented = true });
+                    await File.WriteAllTextAsync(_filePath, json);
+                }
+                else
+                {
+                    // Optionally handle the case where the job wasn't found
+                    throw new Exception($"Job with Id {job.Id} not found.");
+                }
             }
-            else
+            finally
             {
-                // Optionally handle the case where the job wasn't found
-                throw new Exception($"Job with Id {job.Id} not found.");
+                _writeSemaphore.Release(); // Release the write semaphore
             }
         }
     }
-
 }
