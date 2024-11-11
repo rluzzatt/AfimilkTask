@@ -19,7 +19,7 @@ Run the `JobScheduler` project, and in **Swagger**, you’ll find the `run-demo`
 - **Description and Output**: The demo’s behavior and outputs are shown directly in the server process console.
 
 ### 3. **Manual Run**
-To manually register new jobs, use the `register` API (with swagger, postman etc..). Here’s an sample request body you can modify:
+To manually register new jobs, use the `register` API (with swagger, postman etc..). Here’s a sample request body you can copy/modify/run:
 
 #### Job Registration Request Example:
 ```json
