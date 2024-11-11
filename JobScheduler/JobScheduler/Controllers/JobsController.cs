@@ -73,8 +73,12 @@ namespace JobScheduler.Controllers
             Console.WriteLine("1. Job 1 will run 3 seconds from now and print a message. It will run 2 times.");
             Console.WriteLine("2. Job 2 will run 8 seconds from now and print a message. It will run 1 time.");
             Console.WriteLine("3. Job 3 will run 11 seconds from now and print a message, then run 5 times.");
+            Console.WriteLine();
             Console.WriteLine("Each job will execute at the scheduled time based on the MaxOccurrences.");
             Console.WriteLine();
+            Console.WriteLine("Note: During the demo execution you can call GetAll Jobs and see their execution updates");
+            Console.WriteLine();
+
 
             await _jobRepository.DeleteAllJobsAsync();
 
