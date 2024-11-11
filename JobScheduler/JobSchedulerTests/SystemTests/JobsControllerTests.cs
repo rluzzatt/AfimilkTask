@@ -13,7 +13,7 @@ namespace JobSchedulerTests.SystemTests
         private const string JobSchedulerProccessName = "JobScheduler.exe";
         private Process _webAppProcess;
         private HttpClient _client;
-        private string _baseUrl = "http://localhost:5268"; // The URL where the app is hosted locally
+        private string _baseUrl = "http://localhost:5000"; // The URL where the app is hosted locally
 
         [TestInitialize]
         public async Task Setup()
