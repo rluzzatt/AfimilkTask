@@ -24,7 +24,6 @@ namespace JobScheduler.Services
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            // Load jobs from the repository on startup
             _jobs = await _jobRepository.LoadJobsAsync();
 
             // Run a loop to check and execute jobs periodically
@@ -35,7 +34,7 @@ namespace JobScheduler.Services
                     await ExecuteJobAsync(job, stoppingToken);
                 }
 
-                // Wait for 1 minute before checking again
+                // Wait for 5 seconds minute before checking again
                 await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
             }
         }
@@ -44,13 +43,25 @@ namespace JobScheduler.Services
         {
             try
             {
-                // Note: cannot pass cancelation tolken here, 
-                await CSharpScript.EvaluateAsync(job.ScriptCode, scriptOptions);
+                switch (job.JobType)
+                {
+                    case JobType.CSharpScript:
+                
+                        await CSharpScript.EvaluateAsync(job.ScriptCode, scriptOptions/*cannot pass cancelation tolken here*/);
+                        break;
+
+                    default:
+                        throw new NotSupportedException($"job type {job.JobType} is not yet supported");
+
+                }
+
                 job.OccurrencesExecuted++;
 
                 // Update the job in the repository to reflect the execution
                 await _jobRepository.UpdateJobAsync(job);
-                _logger.LogInformation($"Executed job '{job.Name}' successfully. ({job.OccurrencesExecuted} out of {job.MaxOccurrences} iterations)");
+
+                _logger.LogInformation($"Executed job '{job.Name}' successfully. " +
+                    $"({job.OccurrencesExecuted} out of {job.MaxOccurrences} iterations)");
             }
             catch (Exception ex)
             {
@@ -58,7 +69,6 @@ namespace JobScheduler.Services
             }
         }
 
-        // Method to register a new job
         public async Task RegisterJob(Job job)
         {
             _jobs.Add(job);

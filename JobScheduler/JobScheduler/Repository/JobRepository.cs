@@ -10,9 +10,6 @@
         public async Task DeleteAllJobsAsync()
         {
             if (File.Exists(_filePath))
-                File.Delete(_filePath);
-
-            if (File.Exists(_filePath))
             {
                 await Task.Run(() => File.Delete(_filePath)); 
             }
