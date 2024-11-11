@@ -1,5 +1,4 @@
-﻿using JobScheduler.Models;
-
+﻿
 namespace JobScheduler.Dto
 {
     public class RegisterJobDto

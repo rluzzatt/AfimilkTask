@@ -39,7 +39,7 @@ namespace JobScheduler.Controllers
         }
 
         [HttpGet("all")]
-        public ActionResult<IReadOnlyList<Job>> GetJobs()
+        public ActionResult<List<Job>> GetJobs()
         {
             try
             {
