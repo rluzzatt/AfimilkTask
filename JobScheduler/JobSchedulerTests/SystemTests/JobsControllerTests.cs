@@ -53,7 +53,7 @@ namespace JobSchedulerTests.SystemTests
                 Name = "SystemRegisterTest" + now,
                 ExecutionTime = now,
                 MaxOccurrences = 1,
-                ScriptCode = "\"Console.WriteLine(test job Test2\""
+                ScriptCode = "Console.WriteLine(\"RegisterJob - test job\");"
             };
 
             var content = new StringContent(JsonSerializer.Serialize(registerJobDto), Encoding.UTF8, "application/json");
@@ -84,7 +84,7 @@ namespace JobSchedulerTests.SystemTests
                 Name = "SystemGetJobsTest" + now,
                 ExecutionTime = now,
                 MaxOccurrences = 1,
-                ScriptCode = "\"Console.WriteLine(test job Test2\""
+                ScriptCode = "Console.WriteLine(\"GetJobs - test job\");"
             };
 
             var content = new StringContent(JsonSerializer.Serialize(registerJobDto), Encoding.UTF8, "application/json");

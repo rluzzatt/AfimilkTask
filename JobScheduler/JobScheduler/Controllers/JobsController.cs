@@ -60,5 +60,12 @@ namespace JobScheduler.Controllers
             }
         }
 
+        [HttpGet("run-demo")]
+        public ActionResult<string> Demo()
+        {
+            return Ok("Job scheduler demo started, open the server console to see jobs executions");
+
+        }
+
     }
 }
