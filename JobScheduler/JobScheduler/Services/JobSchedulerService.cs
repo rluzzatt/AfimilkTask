@@ -28,15 +28,15 @@ namespace JobScheduler.Services
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                // Get the current time as TimeSpan
                 TimeSpan currentTime = DateTime.Now.TimeOfDay;
 
-                foreach (var job in _jobs.Where(j => !j.IsCompleted && j.ExecutionTime <= currentTime))
+                foreach (var job in _jobs.Where(j => !j.IsCompleted && j.ExecutionTime <= currentTime).ToList())
                 {
+                    //no reason to await for job to compleate execution
                     _ = ExecuteJobAsync(job, stoppingToken);
                 }
 
-                // Wait for 5 seconds before checking again
+                // Wait for 2 seconds before checking again
                 await Task.Delay(TimeSpan.FromSeconds(2), stoppingToken);
             }
         }
