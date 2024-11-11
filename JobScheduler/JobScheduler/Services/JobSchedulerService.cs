@@ -46,6 +46,8 @@ namespace JobScheduler.Services
         {
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 switch (job.JobType)
                 {
                     case JobType.CSharpScript:
@@ -57,6 +59,9 @@ namespace JobScheduler.Services
                         throw new NotSupportedException($"job type {job.JobType} is not yet supported");
 
                 }
+
+                cancellationToken.ThrowIfCancellationRequested();
+
 
                 job.OccurrencesExecuted++;
 

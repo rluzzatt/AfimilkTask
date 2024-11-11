@@ -32,7 +32,8 @@ namespace JobScheduler.Controllers
                 var job = _mapper.Map<Job>(registerJobDto);
 
                 await _jobSchedulerService.RegisterJob(job);
-                return Ok("Job registered successfully.");
+
+                return Ok($"Job '{job.Name}' registered successfully and will run at its execution time");
             }
             catch (Exception ex)
             {
