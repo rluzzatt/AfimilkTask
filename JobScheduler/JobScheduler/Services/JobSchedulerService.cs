@@ -74,6 +74,11 @@ namespace JobScheduler.Services
             _jobs.Add(job);
             await _jobRepository.SaveJobsAsync(_jobs);
         }
+
+        public IReadOnlyList<Job> GetJobs()
+        {
+            return _jobs.AsReadOnly();
+        }
     }
 
 }

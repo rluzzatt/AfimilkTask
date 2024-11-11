@@ -6,6 +6,12 @@
     public class JobRepository : IJobRepository
     {
         private readonly string _filePath = "c:\\temp\\jobs.json";
+        private readonly ILogger<JobRepository> _logger;
+
+        public JobRepository(ILogger<JobRepository> logger)
+        {
+            _logger = logger;
+        }
 
         public async Task DeleteAllJobsAsync()
         {
@@ -18,11 +24,32 @@
         public async Task<List<Job>> LoadJobsAsync()
         {
             if (!File.Exists(_filePath))
-                return new List<Job>();
+            {
+                _logger.LogInformation("No jobs file found at {FilePath}, returning empty list.", _filePath);
+                return new List<Job>(); // Return empty list if the file does not exist
+            }
 
-            var json = await File.ReadAllTextAsync(_filePath);
-            return JsonSerializer.Deserialize<List<Job>>(json) ?? new List<Job>();
+            try
+            {
+                var json = await File.ReadAllTextAsync(_filePath);
+                if(string.IsNullOrEmpty(json)) return new List<Job>();  
+
+                var jobs = JsonSerializer.Deserialize<List<Job>>(json) ?? new List<Job>();
+
+                return jobs;
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(ex, "Error deserializing jobs from {FilePath}. Returning empty list.", _filePath);
+                return new List<Job>(); // Return empty list if deserialization fails
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An unexpected error occurred while loading jobs from {FilePath}. Returning empty list.", _filePath);
+                return new List<Job>(); // Return empty list for unexpected errors
+            }
         }
+
 
         public async Task SaveJobsAsync(List<Job> jobs)
         {
